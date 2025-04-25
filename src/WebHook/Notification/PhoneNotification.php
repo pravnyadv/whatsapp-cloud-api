@@ -19,6 +19,11 @@ final class PhoneNotification extends Notification
         $this->display_phone_number = $display_phone_number;
     }
 
+    public function getName(): ?Phone\Name
+    {
+        return $this->name;
+    }
+
     public function withName(Phone\Name $name): self
     {
         $this->name = $name;

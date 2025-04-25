@@ -16,6 +16,11 @@ final class TemplateNotification extends Notification
         parent::__construct($id, $business, $received_at);
     }
 
+    public function getStatus(): ?Template\Status
+    {
+        return $this->status;
+    }
+
     public function withStatus(Template\Status $status): self
     {
         $this->status = $status;
