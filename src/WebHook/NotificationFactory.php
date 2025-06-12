@@ -6,14 +6,20 @@ final class NotificationFactory
 {
     private Notification\PhoneNotificationFactory $phone_notification_factory;
     private Notification\StatusNotificationFactory $status_notification_factory;
+    private Notification\EchoesNotificationFactory $echoes_notification_factory;
+    private Notification\HistoryNotificationFactory $history_notification_factory;
     private Notification\MessageNotificationFactory $message_notification_factory;
+    private Notification\AppStateNotificationFactory $appstate_notification_factory;
     private Notification\TemplateNotificationFactory $template_notification_factory;
 
     public function __construct()
     {
         $this->phone_notification_factory = new Notification\PhoneNotificationFactory();
         $this->status_notification_factory = new Notification\StatusNotificationFactory();
+        $this->echoes_notification_factory = new Notification\EchoesNotificationFactory();
+        $this->history_notification_factory = new Notification\HistoryNotificationFactory();
         $this->message_notification_factory = new Notification\MessageNotificationFactory();
+        $this->appstate_notification_factory = new Notification\AppStateNotificationFactory();
         $this->template_notification_factory = new Notification\TemplateNotificationFactory();
     }
 
@@ -65,6 +71,18 @@ final class NotificationFactory
 
                 if ($field && str_starts_with($field, 'message_template')) {
                     $notifications[] = $this->template_notification_factory->buildFromPayload($value, $timestamp, $id, $field);
+                }
+
+                if ($field && $field == 'history') {
+                    $notifications[] = $this->history_notification_factory->buildFromPayload($value, $timestamp, $id, $field);
+                }
+
+                if ($field && $field == 'smb_app_state_sync') {
+                    $notifications[] = $this->appstate_notification_factory->buildFromPayload($value, $timestamp, $id, $field);
+                }
+
+                if ($field && $field == 'smb_message_echoes') {
+                    $notifications[] = $this->echoes_notification_factory->buildFromPayload($value, $timestamp, $id, $field);
                 }
             }
         }
