@@ -1,133 +1,87 @@
 <?php
-namespace Netflie\WhatsAppCloudApi\WebHook\Notification\Echoes;
+namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
-use Netflie\WhatsAppCloudApi\WebHook\Notification\MessageNotification;
+use Netflie\WhatsAppCloudApi\WebHook\Notification;
 
-final class Message
+final class EchoesNotification extends Notification
 {
-    private string $id;
-    private string $from;
-    private string $to;
-    private string $timestamp;
-    private string $type;
-    private MessageNotification $message_notification;
+    /** @var Echoes\Message[] */
+    private array $messages = [];
 
     public function __construct(
         string $id,
-        string $from,
-        string $to,
-        string $timestamp,
-        string $type,
-        MessageNotification $message_notification
+        Support\Business $business,
+        string $received_at
     ) {
-        $this->id = $id;
-        $this->from = $from;
-        $this->to = $to;
-        $this->timestamp = $timestamp;
-        $this->type = $type;
-        $this->message_notification = $message_notification;
+        parent::__construct($id, $business, $received_at);
     }
 
-    public function id(): string
+    public function addMessage(Echoes\Message $message): self
     {
-        return $this->id;
-    }
-
-    public function from(): string
-    {
-        return $this->from;
-    }
-
-    public function to(): string
-    {
-        return $this->to;
-    }
-
-    public function timestamp(): string
-    {
-        return $this->timestamp;
-    }
-
-    public function type(): string
-    {
-        return $this->type;
-    }
-
-    public function messageNotification(): MessageNotification
-    {
-        return $this->message_notification;
+        $this->messages[] = $message;
+        return $this;
     }
 
     /**
-     * Check if message is of specific type
+     * @return Echoes\Message[]
      */
-    public function isType(string $type): bool
+    public function getMessages(): array
     {
-        return $this->type === $type;
+        return $this->messages;
     }
 
-    public function isText(): bool
+    public function hasMessages(): bool
     {
-        return $this->isType('text');
+        return !empty($this->messages);
     }
 
-    public function isMedia(): bool
+    public function getMessagesCount(): int
     {
-        return in_array($this->type, ['image', 'video', 'audio', 'document', 'sticker', 'voice']);
-    }
-
-    public function isLocation(): bool
-    {
-        return $this->isType('location');
-    }
-
-    public function isContact(): bool
-    {
-        return $this->isType('contacts');
-    }
-
-    public function isInteractive(): bool
-    {
-        return $this->isType('interactive');
-    }
-
-    public function isButton(): bool
-    {
-        return $this->isType('button');
-    }
-
-    public function isReaction(): bool
-    {
-        return $this->isType('reaction');
+        return count($this->messages);
     }
 
     /**
-     * Get message content based on type
+     * Get the first message (most common case)
      */
-    public function getContent(): mixed
+    public function getFirstMessage(): ?Echoes\Message
     {
-        return match($this->type) {
-            'text' => $this->message_notification->text(),
-            'image', 'video', 'audio', 'document', 'sticker', 'voice' => $this->message_notification->media(),
-            'location' => $this->message_notification->location(),
-            'contacts' => $this->message_notification->contact(),
-            'interactive' => $this->message_notification->interactive(),
-            'button' => $this->message_notification->button(),
-            'reaction' => $this->message_notification->reaction(),
-            'order' => $this->message_notification->order(),
-            'system' => $this->message_notification->system(),
-            default => null
-        };
+        return $this->messages[0] ?? null;
     }
 
-    public function toArray(): array
+    /**
+     * Get messages by type
+     * @param string $type
+     * @return Echoes\Message[]
+     */
+    public function getMessagesByType(string $type): array
     {
-        return [
-            'id' => $this->id,
-            'from' => $this->from,
-            'to' => $this->to,
-            'timestamp' => $this->timestamp,
-            'type' => $this->type,
-        ];
+        return array_filter($this->messages, function(Echoes\Message $message) use ($type) {
+            return $message->type() === $type;
+        });
+    }
+
+    /**
+     * Get messages sent to a specific recipient
+     * @param string $to
+     * @return Echoes\Message[]
+     */
+    public function getMessagesTo(string $to): array
+    {
+        return array_filter($this->messages, function(Echoes\Message $message) use ($to) {
+            return $message->to() === $to;
+        });
+    }
+
+    /**
+     * Get all unique recipients
+     * @return string[]
+     */
+    public function getRecipients(): array
+    {
+        $recipients = array_map(function(Echoes\Message $message) {
+            return $message->to();
+        }, $this->messages);
+        
+        return array_unique($recipients);
     }
 }

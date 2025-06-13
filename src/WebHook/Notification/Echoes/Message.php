@@ -1,87 +1,133 @@
 <?php
-namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
+namespace Netflie\WhatsAppCloudApi\WebHook\Notification\Echoes;
 
-use Netflie\WhatsAppCloudApi\WebHook\Notification;
+use Netflie\WhatsAppCloudApi\WebHook\Notification\MessageNotification;
 
-final class EchoesNotification extends Notification
+final class Message
 {
-    /** @var Echoes\Message[] */
-    private array $messages = [];
+    private string $id;
+    private string $from;
+    private string $to;
+    private string $timestamp;
+    private string $type;
+    private MessageNotification $message_notification;
 
     public function __construct(
         string $id,
-        Support\Business $business,
-        string $received_at
+        string $from,
+        string $to,
+        string $timestamp,
+        string $type,
+        MessageNotification $message_notification
     ) {
-        parent::__construct($id, $business, $received_at);
+        $this->id = $id;
+        $this->from = $from;
+        $this->to = $to;
+        $this->timestamp = $timestamp;
+        $this->type = $type;
+        $this->message_notification = $message_notification;
     }
 
-    public function addMessage(Echoes\Message $message): self
+    public function id(): string
     {
-        $this->messages[] = $message;
-        return $this;
+        return $this->id;
     }
 
-    /**
-     * @return Echoes\Message[]
-     */
-    public function getMessages(): array
+    public function from(): string
     {
-        return $this->messages;
+        return $this->from;
     }
 
-    public function hasMessages(): bool
+    public function to(): string
     {
-        return !empty($this->messages);
+        return $this->to;
     }
 
-    public function getMessagesCount(): int
+    public function timestamp(): string
     {
-        return count($this->messages);
+        return $this->timestamp;
     }
 
-    /**
-     * Get the first message (most common case)
-     */
-    public function getFirstMessage(): ?Echoes\Message
+    public function type(): string
     {
-        return $this->messages[0] ?? null;
+        return $this->type;
     }
 
-    /**
-     * Get messages by type
-     * @param string $type
-     * @return Echoes\Message[]
-     */
-    public function getMessagesByType(string $type): array
+    public function messageNotification(): MessageNotification
     {
-        return array_filter($this->messages, function(Echoes\Message $message) use ($type) {
-            return $message->type() === $type;
-        });
+        return $this->message_notification;
     }
 
     /**
-     * Get messages sent to a specific recipient
-     * @param string $to
-     * @return Echoes\Message[]
+     * Check if message is of specific type
      */
-    public function getMessagesTo(string $to): array
+    public function isType(string $type): bool
     {
-        return array_filter($this->messages, function(Echoes\Message $message) use ($to) {
-            return $message->to() === $to;
-        });
+        return $this->type === $type;
+    }
+
+    public function isText(): bool
+    {
+        return $this->isType('text');
+    }
+
+    public function isMedia(): bool
+    {
+        return in_array($this->type, ['image', 'video', 'audio', 'document', 'sticker', 'voice']);
+    }
+
+    public function isLocation(): bool
+    {
+        return $this->isType('location');
+    }
+
+    public function isContact(): bool
+    {
+        return $this->isType('contacts');
+    }
+
+    public function isInteractive(): bool
+    {
+        return $this->isType('interactive');
+    }
+
+    public function isButton(): bool
+    {
+        return $this->isType('button');
+    }
+
+    public function isReaction(): bool
+    {
+        return $this->isType('reaction');
     }
 
     /**
-     * Get all unique recipients
-     * @return string[]
+     * Get message content based on type
      */
-    public function getRecipients(): array
+    public function getContent(): mixed
     {
-        $recipients = array_map(function(Echoes\Message $message) {
-            return $message->to();
-        }, $this->messages);
-        
-        return array_unique($recipients);
+        return match($this->type) {
+            'text' => $this->message_notification->text(),
+            'image', 'video', 'audio', 'document', 'sticker', 'voice' => $this->message_notification->media(),
+            'location' => $this->message_notification->location(),
+            'contacts' => $this->message_notification->contact(),
+            'interactive' => $this->message_notification->interactive(),
+            'button' => $this->message_notification->button(),
+            'reaction' => $this->message_notification->reaction(),
+            'order' => $this->message_notification->order(),
+            'system' => $this->message_notification->system(),
+            default => null
+        };
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'from' => $this->from,
+            'to' => $this->to,
+            'timestamp' => $this->timestamp,
+            'type' => $this->type,
+        ];
     }
 }
