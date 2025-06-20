@@ -82,7 +82,7 @@ final class NotificationFactory
                 }
 
                 if ($field && $field == 'smb_message_echoes') {
-                    $notifications[] = $this->echoes_notification_factory->buildFromPayload($value, $timestamp, $id, $field);
+                    $notifications[] = $this->echoes_notification_factory->buildFromPayload($value, $id, $field);
                 }
             }
         }

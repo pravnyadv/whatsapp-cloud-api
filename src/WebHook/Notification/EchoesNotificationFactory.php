@@ -4,7 +4,7 @@ namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
 class EchoesNotificationFactory
 {
-    public function buildFromPayload(array $payload, ?string $timestamp, ?string $id, ?string $field = null): EchoesNotification
+    public function buildFromPayload(array $payload, ?string $id, ?string $field = null): EchoesNotification
     {
         $business = new Support\Business(
             $payload['metadata']['phone_number_id'] ?? '',
@@ -14,7 +14,6 @@ class EchoesNotificationFactory
         $notification = new EchoesNotification(
             $id ?? '',
             $business,
-            $timestamp ?? ''
         );
 
         if (isset($payload['message_echoes']) && is_array($payload['message_echoes'])) {
