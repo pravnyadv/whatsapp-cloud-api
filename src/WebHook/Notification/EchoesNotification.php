@@ -15,7 +15,7 @@ final class EchoesNotification extends Notification
         string $id,
         Support\Business $business
     ) {
-        parent::__construct($id, $business);
+        parent::__construct($id, $business, time());
     }
 
     /**
