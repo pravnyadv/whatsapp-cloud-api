@@ -4,64 +4,36 @@ namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
 class EchoesNotificationFactory
 {
-    public function buildFromPayload(array $payload, ?string $id, ?string $field = null): EchoesNotification
+    public function buildFromPayload(array $value, string $id, string $field): ?EchoesNotification
     {
-        $business = new Support\Business(
-            $payload['metadata']['phone_number_id'] ?? '',
-            $payload['metadata']['display_phone_number'] ?? ''
-        );
-
-        $notification = new EchoesNotification(
-            $id ?? '',
-            $business,
-        );
-
-        if (isset($payload['message_echoes']) && is_array($payload['message_echoes'])) {
-            foreach ($payload['message_echoes'] as $messageData) {
-                $message = $this->buildMessageFromEcho($business, $messageData);
-                $notification->addMessage($message);
-            }
+        if (!isset($value['message_echoes'][0])) {
+            return null;
         }
 
-        return $notification;
+        $message = $value['message_echoes'][0];
+        $metadata = $value['metadata'] ?? [];
+        
+        $notification = $this->buildEchoesNotification($metadata, $message);
+
+        return $this->decorateNotification($notification, $message, $value);
     }
 
-    private function buildMessageFromEcho(Support\Business $business, array $messageData): Echoes\Message
-    {
-        // Extract basic message info
-        $messageId = $messageData['id'] ?? '';
-        $from = $messageData['from'] ?? '';
-        $to = $messageData['to'] ?? '';
-        $timestamp = $messageData['timestamp'] ?? '';
-        $type = $messageData['type'] ?? 'unknown';
-
-        // Build the actual message notification using existing logic
-        $messageNotification = $this->buildMessageNotification($business, $messageData);
-
-        return new Echoes\Message(
-            $messageId,
-            $from,
-            $to,
-            $timestamp,
-            $type,
-            $messageNotification
-        );
-    }
-
-    private function buildMessageNotification(Support\Business $business, array $message): MessageNotification
+    private function buildEchoesNotification(array $metadata, array $message): EchoesNotification
     {
         switch ($message['type']) {
             case 'text':
                 return new Text(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['text']['body'],
                     $message['timestamp']
                 );
             case 'reaction':
                 return new Reaction(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['reaction']['message_id'],
                     $message['reaction']['emoji'] ?? '',
                     $message['timestamp']
@@ -74,7 +46,8 @@ class EchoesNotificationFactory
             case 'voice':
                 return new Media(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message[$message['type']]['id'],
                     $message[$message['type']]['mime_type'],
                     $message[$message['type']]['sha256'],
@@ -85,7 +58,8 @@ class EchoesNotificationFactory
             case 'location':
                 return new Location(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['location']['latitude'],
                     $message['location']['longitude'],
                     $message['location']['name'] ?? '',
@@ -95,7 +69,8 @@ class EchoesNotificationFactory
             case 'contacts':
                 return new Contact(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['contacts'][0]['addresses'] ?? [],
                     $message['contacts'][0]['emails'] ?? [],
                     $message['contacts'][0]['name'],
@@ -108,7 +83,8 @@ class EchoesNotificationFactory
             case 'button':
                 return new Button(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['button']['text'],
                     $message['button']['payload'],
                     $message['timestamp']
@@ -119,7 +95,8 @@ class EchoesNotificationFactory
 
                     return new Flow(
                         $message['id'],
-                        $business,
+                        new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                        $message['to'],
                         $nfmReply['name'],
                         $nfmReply['body'],
                         $nfmReply['response_json'] ?? '',
@@ -129,7 +106,8 @@ class EchoesNotificationFactory
 
                 return new Interactive(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['interactive']['list_reply']['id'] ?? $message['interactive']['button_reply']['id'],
                     $message['interactive']['list_reply']['title'] ?? $message['interactive']['button_reply']['title'],
                     $message['interactive']['list_reply']['description'] ?? '',
@@ -138,7 +116,8 @@ class EchoesNotificationFactory
             case 'order':
                 return new Order(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['order']['catalog_id'],
                     $message['order']['text'] ?? '',
                     new Support\Products($message['order']['product_items']),
@@ -147,7 +126,8 @@ class EchoesNotificationFactory
             case 'system':
                 return new System(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     new Support\Business($message['system']['customer'], ''),
                     $message['system']['body'],
                     $message['timestamp']
@@ -156,9 +136,24 @@ class EchoesNotificationFactory
             default:
                 return new Unknown(
                     $message['id'],
-                    $business,
+                    new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),
+                    $message['to'],
                     $message['timestamp']
                 );
         }
+    }
+
+    private function decorateNotification(EchoesNotification $notification, array $message, array $value): EchoesNotification
+    {
+        // For echoes, we can create a customer object from the 'to' field
+        if (isset($message['to'])) {
+            $notification->withCustomer(new Support\Customer(
+                $message['to'],
+                '', // Name is not available in echoes
+                $message['to']
+            ));
+        }
+
+        return $notification;
     }
 }
