@@ -4,7 +4,7 @@ namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
 class EchoesNotificationFactory
 {
-    public function buildFromPayload(array $value, string $id, string $field): ?EchoesNotification
+    public function buildFromPayload(array $value, string $id, string $field)
     {
         if (!isset($value['message_echoes'][0])) {
             return null;
@@ -18,7 +18,7 @@ class EchoesNotificationFactory
         return $this->decorateNotification($notification, $message, $value);
     }
 
-    private function buildEchoesNotification(array $metadata, array $message): EchoesNotification
+    private function buildEchoesNotification(array $metadata, array $message)
     {
         switch ($message['type']) {
             case 'text':
@@ -132,7 +132,7 @@ class EchoesNotificationFactory
         }
     }
 
-    private function decorateNotification(EchoesNotification $notification, array $message, array $value): EchoesNotification
+    private function decorateNotification($notification, array $message, array $value)
     {
         // For echoes, we can create a customer object from the 'to' field
         if (isset($message['to'])) {
