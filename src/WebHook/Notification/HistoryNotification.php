@@ -14,11 +14,11 @@ class HistoryNotification extends Notification
     public function __construct(string $id, $business, string $received_at_timestamp, array $historyData)
     {
         parent::__construct($id, $business, $received_at_timestamp);
-
+        
         $this->historyData = $historyData;
         $this->metadata = $historyData['metadata'] ?? [];
         $this->threads = $historyData['threads'] ?? [];
-
+        
         // Flatten all messages for easy access
         $this->flattenMessages();
     }
@@ -31,12 +31,6 @@ class HistoryNotification extends Notification
         foreach ($this->threads as $thread) {
             if (isset($thread['messages']) && is_array($thread['messages'])) {
                 foreach ($thread['messages'] as $message) {
-                    $message['status'] = null;
-                    $message['chatId'] = $thread['id'];
-                    $message['fromMe'] = $message['history_context']['from_me'] ?? false;
-                    if($message['fromMe']) {
-                        $message['status'] = $message['history_context']['status'] ?? null;
-                    }
                     $this->allMessages[] = $message;
                 }
             }
@@ -109,7 +103,6 @@ class HistoryNotification extends Notification
                 return $thread['messages'] ?? [];
             }
         }
-
         return [];
     }
 
@@ -195,7 +188,7 @@ class HistoryNotification extends Notification
      */
     public function getTextMessages(): array
     {
-        return array_filter($this->allMessages, function ($message) {
+        return array_filter($this->allMessages, function($message) {
             return ($message['type'] ?? '') === 'text';
         });
     }
@@ -205,7 +198,7 @@ class HistoryNotification extends Notification
      */
     public function getErrorMessages(): array
     {
-        return array_filter($this->allMessages, function ($message) {
+        return array_filter($this->allMessages, function($message) {
             return ($message['type'] ?? '') === 'errors';
         });
     }
@@ -215,7 +208,55 @@ class HistoryNotification extends Notification
      */
     public function hasErrors(): bool
     {
-        return count($this->getErrorMessages()) > 0;
+        return count($this->getErrorMessages()) > 0 || $this->isDeclined();
+    }
+
+    /**
+     * Check if history sharing was declined by the business
+     */
+    public function isDeclined(): bool
+    {
+        $errors = $this->historyData['errors'] ?? [];
+        
+        if (!is_array($errors)) {
+            return false;
+        }
+
+        foreach ($errors as $error) {
+            if (($error['code'] ?? 0) == 2593109) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the decline error message if history was declined
+     */
+    public function getDeclineErrorMessage(): ?string
+    {
+        if (!$this->isDeclined()) {
+            return null;
+        }
+
+        $errors = $this->historyData['errors'] ?? [];
+        
+        foreach ($errors as $error) {
+            if (($error['code'] ?? 0) == 2593109) {
+                return $error['message'] ?? 'History sharing is turned off by the business';
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get all root-level errors (like decline errors)
+     */
+    public function getRootErrors(): array
+    {
+        return $this->historyData['errors'] ?? [];
     }
 
     /**
@@ -238,7 +279,7 @@ class HistoryNotification extends Notification
             'sync_completed' => $this->isSyncCompleted(),
             'threads_count' => $this->getThreadsCount(),
             'messages_count' => $this->getTotalMessagesCount(),
-            'has_errors' => $this->hasErrors(),
+            'has_errors' => $this->hasErrors()
         ];
     }
 }
