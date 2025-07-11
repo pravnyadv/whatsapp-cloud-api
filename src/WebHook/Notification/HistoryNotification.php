@@ -36,9 +36,11 @@ class HistoryNotification extends Notification
                     $message['fromMe'] = $message['history_context']['from_me'] ?? false;
                     if($message['fromMe']) {
                         $message['from'] = $this->businessPhoneNumber();
+                        $message['to'] = $message['chatId'];
                         $message['status'] = $message['history_context']['status'] ?? null;
                     } else {
                         $message['from'] = $thread['id'];
+                        $message['to'] = $this->businessPhoneNumber();
                     }
                     $this->allMessages[] = $message;
                 }
