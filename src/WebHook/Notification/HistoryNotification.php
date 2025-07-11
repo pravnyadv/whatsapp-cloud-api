@@ -31,6 +31,12 @@ class HistoryNotification extends Notification
         foreach ($this->threads as $thread) {
             if (isset($thread['messages']) && is_array($thread['messages'])) {
                 foreach ($thread['messages'] as $message) {
+                    $message['status'] = null;
+                    $message['chatId'] = $thread['id'];
+                    $message['fromMe'] = $message['history_context']['from_me'] ?? false;
+                    if($message['fromMe']) {
+                        $message['status'] = $message['history_context']['status'] ?? null;
+                    }
                     $this->allMessages[] = $message;
                 }
             }
