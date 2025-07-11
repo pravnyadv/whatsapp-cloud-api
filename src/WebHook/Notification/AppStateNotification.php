@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
 use Netflie\WhatsAppCloudApi\WebHook\Notification;
@@ -19,6 +20,7 @@ final class AppStateNotification extends Notification
     public function addContact(AppState\Contact $contact): self
     {
         $this->contacts[] = $contact;
+
         return $this;
     }
 
@@ -47,7 +49,7 @@ final class AppStateNotification extends Notification
      */
     public function getContactsByAction(string $action): array
     {
-        return array_filter($this->contacts, function(AppState\Contact $contact) use ($action) {
+        return array_filter($this->contacts, function (AppState\Contact $contact) use ($action) {
             return $contact->action() === $action;
         });
     }

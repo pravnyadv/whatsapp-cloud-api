@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification;
 
 final class MediaPlaceholder extends MessageNotification

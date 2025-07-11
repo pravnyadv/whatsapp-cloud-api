@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification\History;
 
 final class HistoryError
@@ -47,7 +48,7 @@ final class HistoryError
             'code' => $this->code,
             'title' => $this->title,
             'message' => $this->message,
-            'details' => $this->details
+            'details' => $this->details,
         ];
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification\Echoes;
 
 use Netflie\WhatsAppCloudApi\WebHook\Notification\MessageNotification;

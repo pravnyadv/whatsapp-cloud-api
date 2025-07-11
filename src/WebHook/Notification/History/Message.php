@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification\History;
 
 use Netflie\WhatsAppCloudApi\WebHook\Notification\MessageNotification;
@@ -157,7 +158,7 @@ final class Message
             'type' => $this->type,
             'status' => $this->status,
             'is_from_business' => $this->isFromBusiness(),
-            'is_from_user' => $this->isFromUser()
+            'is_from_user' => $this->isFromUser(),
         ];
     }
 }

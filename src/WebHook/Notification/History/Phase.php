@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification\History;
 
 final class Phase
@@ -38,7 +39,7 @@ final class Phase
     {
         return match($this->phase) {
             0 => 'Day 0 through day 1',
-            1 => 'Day 1 through day 90', 
+            1 => 'Day 1 through day 90',
             2 => 'Day 90 through day 180',
             default => 'Unknown phase'
         };
@@ -50,7 +51,7 @@ final class Phase
             'phase' => $this->phase,
             'chunk_order' => $this->chunk_order,
             'progress' => $this->progress,
-            'description' => $this->getPhaseDescription()
+            'description' => $this->getPhaseDescription(),
         ];
     }
 }

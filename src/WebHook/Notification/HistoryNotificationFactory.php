@@ -10,7 +10,7 @@ class HistoryNotificationFactory
     {
         $metadata = $value['metadata'] ?? [];
         $historyData = $value['history'][0] ?? [];
-        
+
         return new HistoryNotification(
             $id ?? uniqid('history_'),
             new Business($metadata['phone_number_id'] ?? '', $metadata['display_phone_number'] ?? ''),

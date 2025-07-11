@@ -1,4 +1,5 @@
 <?php
+
 namespace Netflie\WhatsAppCloudApi\WebHook\Notification\History;
 
 final class Thread
@@ -20,6 +21,7 @@ final class Thread
     public function addMessage(Message $message): self
     {
         $this->messages[] = $message;
+
         return $this;
     }
 
@@ -43,7 +45,7 @@ final class Thread
      */
     public function getMessagesByType(string $type): array
     {
-        return array_filter($this->messages, function(Message $message) use ($type) {
+        return array_filter($this->messages, function (Message $message) use ($type) {
             return $message->type() === $type;
         });
     }
@@ -55,7 +57,7 @@ final class Thread
      */
     public function getMessagesByStatus(string $status): array
     {
-        return array_filter($this->messages, function(Message $message) use ($status) {
+        return array_filter($this->messages, function (Message $message) use ($status) {
             return $message->status() === $status;
         });
     }
@@ -66,7 +68,7 @@ final class Thread
      */
     public function getBusinessMessages(): array
     {
-        return array_filter($this->messages, function(Message $message) {
+        return array_filter($this->messages, function (Message $message) {
             return $message->isFromBusiness();
         });
     }
@@ -77,7 +79,7 @@ final class Thread
      */
     public function getUserMessages(): array
     {
-        return array_filter($this->messages, function(Message $message) {
+        return array_filter($this->messages, function (Message $message) {
             return $message->isFromUser();
         });
     }

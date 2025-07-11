@@ -20,7 +20,7 @@ class EchoesNotification extends MessageNotification
         $this->to = $to;
         $this->message_type = $message_type;
         $this->message_data = $message_data;
-        
+
         // Set customer automatically
         $this->customer = new Support\Customer($to, '', $to);
     }

@@ -12,7 +12,7 @@ class EchoesNotificationFactory
 
         $message = $value['message_echoes'][0];
         $metadata = $value['metadata'] ?? [];
-        
+
         return new EchoesNotification(
             $message['id'],
             new Support\Business($metadata['phone_number_id'], $metadata['display_phone_number']),

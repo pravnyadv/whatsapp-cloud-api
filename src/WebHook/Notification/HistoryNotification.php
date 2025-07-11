@@ -14,11 +14,11 @@ class HistoryNotification extends Notification
     public function __construct(string $id, $business, string $received_at_timestamp, array $historyData)
     {
         parent::__construct($id, $business, $received_at_timestamp);
-        
+
         $this->historyData = $historyData;
         $this->metadata = $historyData['metadata'] ?? [];
         $this->threads = $historyData['threads'] ?? [];
-        
+
         // Flatten all messages for easy access
         $this->flattenMessages();
     }
@@ -109,6 +109,7 @@ class HistoryNotification extends Notification
                 return $thread['messages'] ?? [];
             }
         }
+
         return [];
     }
 
@@ -194,7 +195,7 @@ class HistoryNotification extends Notification
      */
     public function getTextMessages(): array
     {
-        return array_filter($this->allMessages, function($message) {
+        return array_filter($this->allMessages, function ($message) {
             return ($message['type'] ?? '') === 'text';
         });
     }
@@ -204,7 +205,7 @@ class HistoryNotification extends Notification
      */
     public function getErrorMessages(): array
     {
-        return array_filter($this->allMessages, function($message) {
+        return array_filter($this->allMessages, function ($message) {
             return ($message['type'] ?? '') === 'errors';
         });
     }
@@ -237,7 +238,7 @@ class HistoryNotification extends Notification
             'sync_completed' => $this->isSyncCompleted(),
             'threads_count' => $this->getThreadsCount(),
             'messages_count' => $this->getTotalMessagesCount(),
-            'has_errors' => $this->hasErrors()
+            'has_errors' => $this->hasErrors(),
         ];
     }
 }
